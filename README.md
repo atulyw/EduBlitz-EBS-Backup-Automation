@@ -2,6 +2,12 @@
 
 A beginner-friendly serverless project. Students click a button on a website, and an EBS snapshot is created automatically using AWS Lambda.
 
+**Repository:** [https://github.com/atulyw/EduBlitz-EBS-Backup-Automation](https://github.com/atulyw/EduBlitz-EBS-Backup-Automation)
+
+```bash
+git clone https://github.com/atulyw/EduBlitz-EBS-Backup-Automation.git
+```
+
 ---
 
 ## Prerequisites
