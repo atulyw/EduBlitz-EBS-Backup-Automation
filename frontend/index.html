@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBlitz EBS Backup Automation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-pattern" aria-hidden="true"></div>
+
+    <main class="app">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                </span>
+                <span class="logo-text">EduBlitz</span>
+            </div>
+            <span class="badge">EBS Backup</span>
+        </header>
+
+        <section class="card">
+            <div class="card-glow" aria-hidden="true"></div>
+            <div class="card-content">
+                <h1>EBS Snapshot Automation</h1>
+                <p class="subtitle">
+                    Create point-in-time backups of your EBS volume with a single click. Snapshots are stored in the same region as your volume.
+                </p>
+
+                <div class="action-area">
+                    <button type="button" onclick="createSnapshot()" id="createBackupBtn" class="btn-primary">
+                        <span class="btn-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </span>
+                        Create Backup
+                    </button>
+                    <p class="hint">Uses AWS Lambda & API Gateway</p>
+                </div>
+
+                <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>Powered by AWS • Lambda • API Gateway • S3 • CloudFront</p>
+        </footer>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
