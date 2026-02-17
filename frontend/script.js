@@ -1,5 +1,7 @@
-// Replace this with your API Gateway invoke URL after deployment
-const API_GATEWAY_URL = 'REPLACE_WITH_YOUR_API_GATEWAY_URL';
+// IMPORTANT: Use your API Gateway URL here, NOT your CloudFront URL.
+// - API Gateway URL looks like: https://abc123xyz.execute-api.us-east-1.amazonaws.com
+// - CloudFront URL looks like: https://d1234abcd.cloudfront.net  (do NOT use this for the button)
+const API_GATEWAY_URL = 'https://zkch6dfwde.execute-api.eu-west-1.amazonaws.com';
 
 function getStatusEl() {
     return document.getElementById('statusMessage');
@@ -33,12 +35,10 @@ function createSnapshot() {
     btn.disabled = true;
     showStatus('Creating snapshot...', 'loading');
 
+    // Avoid preflight by using a simple POST without custom headers (if CORS not configured)
     fetch(API_GATEWAY_URL + '/backup', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
+        mode: 'cors'
     })
         .then(function (response) {
             if (!response.ok) {
@@ -46,11 +46,17 @@ function createSnapshot() {
                     throw new Error(text || 'Request failed');
                 });
             }
-            return response.json();
+            return response.text();
         })
-        .then(function (data) {
-            // Lambda returns { statusCode: 200, body: "snap-xxx" }
-            const snapshotId = typeof data === 'string' ? data : (data.body || data.snapshotId || data.SnapshotId || 'Unknown');
+        .then(function (text) {
+            // API may return plain "snap-xxx" or JSON { body: "snap-xxx" }
+            let snapshotId = text;
+            try {
+                const data = JSON.parse(text);
+                snapshotId = data.body || data.snapshotId || data.SnapshotId || text;
+            } catch (_) {
+                snapshotId = text;
+            }
             showSnapshotResult(snapshotId);
         })
         .catch(function (err) {

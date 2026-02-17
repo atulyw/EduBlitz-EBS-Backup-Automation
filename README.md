@@ -103,6 +103,13 @@ Connect the website to Lambda using API Gateway.
 9. Click **Next**, then **Create**.
 10. On the **Stages** page, note the **Invoke URL** (e.g. `https://abc123xyz.execute-api.us-east-1.amazonaws.com`).  
     **Save this URL** — you will put it in `script.js`.
+11. **Configure CORS** (required for the website to call the API from the browser):
+    - In the API Gateway console, select your API.
+    - In the left menu, click **CORS** (under **Develop**).
+    - Under **Access-Control-Allow-Origin**, enter your CloudFront URL (e.g. `https://d22e3v4zzmxbjj.cloudfront.net`) or `*` to allow any origin.
+    - Ensure **POST** is in **Access-Control-Allow-Methods**.
+    - Add `Content-Type` to **Access-Control-Allow-Headers** if you send JSON.
+    - Click **Save**.
 
 ---
 
@@ -171,8 +178,10 @@ The website must call your API Gateway URL when the user clicks **Create Backup*
    ```javascript
    const API_GATEWAY_URL = 'REPLACE_WITH_YOUR_API_GATEWAY_URL';
    ```
-3. Replace `REPLACE_WITH_YOUR_API_GATEWAY_URL` with your API Gateway **Invoke URL** (from Section 5).  
-   Do **not** add `/backup` here — the code already appends it.
+3. Replace `REPLACE_WITH_YOUR_API_GATEWAY_URL` with your **API Gateway** Invoke URL (from Section 5).  
+   - **Use the API Gateway URL only** — it looks like `https://xxxxx.execute-api.us-east-1.amazonaws.com`.
+   - **Do NOT use your CloudFront URL** (e.g. `https://d1234.cloudfront.net`). CloudFront only serves the website; it cannot handle POST requests and will return 403.
+   - Do **not** add `/backup` here — the code already appends it.
    - Example: `const API_GATEWAY_URL = 'https://abc123xyz.execute-api.us-east-1.amazonaws.com';`
 4. Save the file, then **re-upload** `script.js` to your S3 bucket (overwrite the existing file).
 5. In CloudFront, open your distribution, go to **Behaviors**, select the default behavior, and click **Edit**. Under **Cache key and origin requests**, you can add a cache policy that allows caching or invalidate the default cache so the new `script.js` is served. For quick testing, you can create an **invalidation** with path `/*` so CloudFront serves the updated file.
@@ -257,5 +266,30 @@ edublitz-ebs-backup-automation/
 ## Quick Reference
 
 - **Lambda**: Update `VOLUME_ID` in `backend/lambda_function.py`.
-- **Website**: Update `API_GATEWAY_URL` in `frontend/script.js` with your API Gateway Invoke URL.
+- **Website**: Update `API_GATEWAY_URL` in `frontend/script.js` with your **API Gateway** Invoke URL (not CloudFront).
 - **CORS**: AWS HTTP API allows cross-origin requests by default; if you use a custom domain or restrict origins, you may need to configure CORS in API Gateway and ensure Lambda responses include the correct headers if required.
+
+---
+
+## Troubleshooting
+
+### 403 ERROR: "The request could not be satisfied" / "supports only cachable requests"
+
+**Cause:** The "Create Backup" button is sending the POST request to your **CloudFront** URL instead of your **API Gateway** URL. CloudFront is set up to serve static files (GET only); it does not accept POST and returns 403.
+
+**Fix:**
+
+1. Open **API Gateway** in the AWS Console → your API → **Stages** → copy the **Invoke URL** (e.g. `https://abc123xyz.execute-api.us-east-1.amazonaws.com`).
+2. In `frontend/script.js`, set:
+   ```javascript
+   const API_GATEWAY_URL = 'https://YOUR_ACTUAL_API_GATEWAY_INVOKE_URL';
+   ```
+   Use the URL from step 1. Do **not** use your CloudFront domain.
+3. Save, re-upload `script.js` to S3, and create a CloudFront invalidation for `/*` (or wait for cache to expire) so the updated script is served.
+4. Reload the website and click **Create Backup** again.
+
+### CORS ERROR: "has been blocked by CORS policy"
+
+**Cause:** The browser blocks the request because the API Gateway does not include `Access-Control-Allow-Origin` in its response to the preflight (OPTIONS) request.
+
+**Fix:** Configure CORS in API Gateway (see step 11 in Section 5). Use your CloudFront origin (e.g. `https://d22e3v4zzmxbjj.cloudfront.net`) or `*` for `Access-Control-Allow-Origin`. Alternatively, the frontend sends a simple POST without custom headers to avoid preflight; ensure you have deployed the latest `script.js`.
